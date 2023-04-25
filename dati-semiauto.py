@@ -19,6 +19,9 @@ def read_options(cf):
         password = conf_info.get("user_info", "password")
         ocr = conf_info.getboolean("ocr_func", "ocr")
     except configparser.NoSectionError:
+        conf_info.add_section("user_info")
+        conf_info.set("user_info", "username", "")
+        conf_info.set("user_info", "password", "")
         conf_info.add_section("ocr_func")
         conf_info.set("ocr_func", "ocr", "False")
         ocr = False
@@ -27,7 +30,6 @@ def read_options(cf):
 
 def login_cscec(usn, psd, ocr_func_b=False):
     driver.get('https://www.cscec83.cn/user/login')
-    countdown(1, "等待八三平台登陆……")
     # 找到输入账号的框，并自动输入账号
     driver.find_element(By.ID, 'username').send_keys(usn)
     time.sleep(0.3)
@@ -42,6 +44,7 @@ def login_cscec(usn, psd, ocr_func_b=False):
         pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
         somecode = pytesseract.image_to_string("codepic.png")
         driver.find_element(By.ID, 'inputCode').send_keys(somecode)
+    countdown(1, "等待八三平台登陆……")
 
 
 def process_close_popup():
@@ -49,7 +52,7 @@ def process_close_popup():
         if ocr:
             countdown(3, "等待关闭弹窗……")
         else:
-            input("是否已登陆八三平台？按回车后将尝试关闭弹窗\n").strip()
+            input("是否已手动登陆八三平台？按回车后将尝试关闭平台登陆后的弹窗\n").strip()
         driver.find_element(By.XPATH, "/html/body/div[5]/div/div[2]/div/div[2]/div[2]/div/div[2]/div[3]/button").click()
     except selenium.common.exceptions.NoSuchElementException:
         print("【异常】：找不到弹窗对应元素，可能已经关闭了弹窗")
@@ -186,6 +189,7 @@ def countdown(sec=5, text=""):
 def process_driver():
     driver.set_window_size(1280, 900)
     # 读写相关配置，登录平台
+    global username, password, ocr
     username, password, ocr = "", "", False
     read_options("options.ini")
     login_cscec(username, password, ocr)
@@ -229,7 +233,7 @@ try:
     driver = WebDriver(options=options)
     process_driver()
 except selenium.common.exceptions.SessionNotCreatedException:
-    print("错误：无法启动chrome，可能是没有最新的chromedriver文件，请下载符合当前版本的chromedriver并覆盖文件夹内文件")
+    print("错误：无法启动chrome，可能是没有最新的chromedriver文件，请下载符合当前版本的chromedriver并放置在文件夹内")
     print("chromedriver下载地址：https://chromedriver.chromium.org/downloads")
 
 endtime = time.time()
