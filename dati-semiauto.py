@@ -27,7 +27,7 @@ def read_options(cf):
 
 def login_cscec(usn, psd, ocr_func_b=False):
     driver.get('https://www.cscec83.cn/user/login')
-    countdown(1, "等待登陆")
+    countdown(1, "等待八三平台登陆……")
     # 找到输入账号的框，并自动输入账号
     driver.find_element(By.ID, 'username').send_keys(usn)
     time.sleep(0.3)
@@ -47,9 +47,9 @@ def login_cscec(usn, psd, ocr_func_b=False):
 def process_close_popup():
     try:
         if ocr:
-            countdown(3, "等待关闭弹窗")
+            countdown(3, "等待关闭弹窗……")
         else:
-            input("是否已登陆83平台？按回车后将尝试关闭弹窗……\n").strip()
+            input("是否已登陆八三平台？按回车后将尝试关闭弹窗\n").strip()
         driver.find_element(By.XPATH, "/html/body/div[5]/div/div[2]/div/div[2]/div[2]/div/div[2]/div[3]/button").click()
     except selenium.common.exceptions.NoSuchElementException:
         print("【异常】：找不到弹窗对应元素，可能已经关闭了弹窗")
@@ -94,7 +94,7 @@ def search_for_answer(question_text, question_type="单选题"):
         keyword_to_search1 = question_text[start:start + 10]
         returned_answer = csvPD[csvPD["question"].str.contains(keyword_to_search1)]
     returned_answer = returned_answer[returned_answer["type"] == question_type]
-    print("返回的结果是：", returned_answer)
+    print("当前问题返回的结果是：", returned_answer)
     return returned_answer.iat[0, 2]
 
 
@@ -162,7 +162,7 @@ def dati_process(url):
             driver.switch_to.window(handles[0])
             process_goto_xueqilai()
             driver.switch_to.window(handles[1])
-            countdown(5, "等待学起来页面的登陆")
+            countdown(5, "等待学起来页面的登陆……")
             continue
 
 
@@ -183,47 +183,55 @@ def countdown(sec=5, text=""):
     print()
 
 
-print("自动答题程序 v1.0.2 \nLast update: 2023/04/24")
+def process_driver():
+    driver.set_window_size(1280, 900)
+    # 读写相关配置，登录平台
+    username, password, ocr = "", "", False
+    read_options("options.ini")
+    login_cscec(username, password, ocr)
+
+    # 关闭弹窗
+    time.sleep(2)
+    process_close_popup()
+
+    # 点击打开学习平台
+    time.sleep(1)
+    process_goto_xueqilai()
+
+    # 切换操作句柄进入第二页（即学习平台）
+    global handles
+    handles = driver.window_handles
+    # print("所有句柄：", handles) print("当前的句柄：", driver.current_window_handle)
+    if len(handles) > 1:
+        driver.switch_to.window(handles[1])
+    else:
+        print("你这只有一个窗口诶")
+    # 等待学起来页面的登陆，延迟5秒
+    countdown(5, "等待学起来页面的登陆……")
+
+    # 进入每日练习
+    dati_process("http://120.27.194.253/org/MSXAav/paper/practice/start?practiceType=1")
+    # 进入每日闯关
+    dati_process("http://120.27.194.253/org/MSXAav/paper/practice/start?practiceType=2")
+    driver.quit()
+
+
+starttime = time.time()
+print("自动答题程序 v1.0.3 \nLast update: 2023/04/25")
 
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
 options.add_argument('--ignore-ssl-errors')
 options.add_argument('-enable-webgl --no-sandbox --disable-dev-shm-usage')
 options.add_experimental_option("excludeSwitches", ['enable-automation', 'enable-logging'])
-driver = WebDriver(options=options)
 
-starttime = time.time()
-driver.set_window_size(1280, 900)
+try:
+    driver = WebDriver(options=options)
+    process_driver()
+except selenium.common.exceptions.SessionNotCreatedException:
+    print("错误：无法启动chrome，可能是没有最新的chromedriver文件，请下载符合当前版本的chromedriver并覆盖文件夹内文件")
+    print("chromedriver下载地址：https://chromedriver.chromium.org/downloads")
 
-# 读写相关配置，登录平台
-username, password, ocr = "", "", False
-read_options("options.ini")
-login_cscec(username, password, ocr)
-
-# 关闭弹窗
-time.sleep(2)
-process_close_popup()
-
-# 点击打开学习平台
-time.sleep(1)
-process_goto_xueqilai()
-
-# 切换操作句柄进入第二页（即学习平台）
-handles = driver.window_handles
-# print("所有句柄：", handles) print("当前的句柄：", driver.current_window_handle)
-if len(handles) > 1:
-    driver.switch_to.window(handles[1])
-else:
-    print("你这只有一个窗口诶")
-# 等待学起来页面的登陆，延迟5秒
-countdown(5, "等待学起来页面的登陆")
-
-# 进入每日练习
-dati_process("http://120.27.194.253/org/MSXAav/paper/practice/start?practiceType=1")
-# 进入每日闯关
-dati_process("http://120.27.194.253/org/MSXAav/paper/practice/start?practiceType=2")
-
-driver.quit()
 endtime = time.time()
 print("本次运行耗时" + str(round(endtime - starttime, 2)) + "秒")
 input("运行完毕，按回车以退出\n")
