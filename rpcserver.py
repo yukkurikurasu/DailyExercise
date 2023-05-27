@@ -7,6 +7,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from multiprocessing.connection import Listener
 from threading import Thread
 
+from selenium.webdriver.common.by import By
+
 
 options = webdriver.ChromeOptions()
 # options.add_argument('--headless')

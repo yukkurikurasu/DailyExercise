@@ -2,6 +2,11 @@
 
 import pickle
 import time
+from selenium import webdriver
+from selenium import common
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.by import By
+import dati_semiauto
 
 
 class RPCProxy(object):
@@ -25,11 +30,10 @@ def get(driver):
     # 主程序部分自此开始：
     starttime = time.time()
 
-
-
-
-
-
+    # a1 = driver.find_element(By.XPATH, "//*[@id=\"app\"]/div/div[2]/div/div/div[1]/div[1]/div[1]/div[2]")
+    #                                     "//*[@id="app"]/div/div[2]/div/div/div[2]/div[1]/div[1]/div[2]"
+    # print(a1.text)
+    # driver.get("http://120.27.194.253/org/MSXAav/paper/practice/start?practiceType=1")
 
 
 
