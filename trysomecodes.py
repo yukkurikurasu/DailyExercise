@@ -26,17 +26,36 @@ def kaizhuan(array):
         rolltoge(middle, outer)
 
 
-def reset(a,b,c):
-    a = Ring(0, 240)
-    b = Ring(180, -60)
-    c = Ring(120, 120)
+def reset():
+    global inner, middle, outer
+    inner = Ring(0, 240)
+    middle = Ring(180, -60)
+    outer = Ring(120, 120)
 
 
 inner = Ring(0, 240)
 middle = Ring(180, -60)
 outer = Ring(120, 120)
 
-kaizhuan([1,3,2])
+# kaizhuan([2,1,1])
+flag = False
+for i in range(0,3):
+    for j in range(0,3):
+        for k in range(0,3):
+            reset()
+            print("===================")
+            print(i,j,k)
+            kaizhuan([i,j,k])
+            if inner.curang==0 and middle.curang==0 and outer.curang==0:
+                print("igoooooooooooooooooooootthis")
+                print("内中：",i,"内外：",j,"中外：",k)
+                flag = True
+                break
+        if flag:
+            break
+    if flag:
+        break
+
 
 
 
